@@ -371,6 +371,7 @@ body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;min
       <span class="nav-link" data-view="upcoming" id="nav-upcoming">Próximos</span>
       <span class="nav-link" data-view="news">Noticias</span>
       <span class="nav-link" data-view="clanes">Clanes</span>
+      <span class="nav-link" data-view="donar">☕ Donar</span>
       <span class="nav-link" data-view="submit" id="nav-submit">Enviar Record</span>
       <span class="nav-link" data-view="profile" id="nav-profile" style="display:none">Mi Perfil</span>
       <span class="nav-link" data-view="admin" id="nav-admin" style="display:none">Admin</span>
@@ -635,6 +636,109 @@ body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;min
     <!-- Records aprobados -->
     <h3 class="sub-title">🏆 Mis Records</h3>
     <div id="prof-records"><div class="spinner">Cargando...</div></div>
+  </div>
+</div>
+
+<!-- ══ DONAR ══ -->
+<div id="view-donar" class="view">
+  <div class="main">
+    <h2 class="section-title">☕ Apoyar la Lista</h2>
+    <p class="section-sub">Tu apoyo ayuda a mantener y mejorar Freedom Demon List.</p>
+
+    <!-- Aviso de IDs -->
+    <div style="background:linear-gradient(135deg,rgba(255,107,53,.12),rgba(255,58,110,.08));border:1px solid rgba(255,107,53,.35);border-radius:12px;padding:1rem 1.25rem;margin-bottom:2rem;display:flex;align-items:flex-start;gap:.75rem">
+      <span style="font-size:1.4rem;flex-shrink:0">⚠️</span>
+      <div>
+        <p style="font-size:13px;color:var(--text);margin-bottom:.35rem">
+          <b style="color:var(--accent)">¡Recuerda incluir tus ID de Discord y FDL cuando hagas tu donación!</b>
+        </p>
+        <p style="font-size:12px;color:var(--muted)">
+          Remember to include your Discord and FDL IDs when you make your donation!
+        </p>
+      </div>
+    </div>
+
+    <!-- Tiers de donación -->
+    <h3 class="sub-title" style="margin-bottom:1rem">🎖️ Tiers de Donación</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:2rem">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem;text-align:center">
+        <div style="font-size:1.8rem">⭐</div>
+        <div style="font-family:'Orbitron',monospace;font-weight:700;color:var(--accent);margin:.4rem 0">$4.99</div>
+        <div style="font-size:12px;color:var(--muted)">Supporter</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem;text-align:center">
+        <div style="font-size:1.8rem">🌟</div>
+        <div style="font-family:'Orbitron',monospace;font-weight:700;color:var(--gold);margin:.4rem 0">$9.99</div>
+        <div style="font-size:12px;color:var(--muted)">Supporter+</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem;text-align:center">
+        <div style="font-size:1.8rem">💎</div>
+        <div style="font-family:'Orbitron',monospace;font-weight:700;color:#67e8f9;margin:.4rem 0">$14.99</div>
+        <div style="font-size:12px;color:var(--muted)">Diamond</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem;text-align:center">
+        <div style="font-size:1.8rem">🏆</div>
+        <div style="font-family:'Orbitron',monospace;font-weight:700;color:var(--silver);margin:.4rem 0">$19.99</div>
+        <div style="font-size:12px;color:var(--muted)">Trophy</div>
+      </div>
+      <div style="background:var(--card);border:1px solid rgba(255,107,53,.4);border-radius:12px;padding:1.1rem;text-align:center;box-shadow:0 0 18px rgba(255,107,53,.12)">
+        <div style="font-size:1.8rem">🐐</div>
+        <div style="font-family:'Orbitron',monospace;font-weight:700;background:linear-gradient(90deg,#ff6b35,#ff3a6e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:.4rem 0">$20+</div>
+        <div style="font-size:12px;color:var(--muted)">GOAT</div>
+      </div>
+    </div>
+
+    <!-- Beneficios -->
+    <h3 class="sub-title" style="margin-bottom:1rem">✨ Beneficios</h3>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:2rem">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="background:var(--surface);border-bottom:1px solid var(--border)">
+            <th style="padding:.7rem 1rem;text-align:left;color:var(--muted);font-weight:500">Beneficio</th>
+            <th style="padding:.7rem 1rem;text-align:center;color:var(--muted);font-weight:500">Usuario</th>
+            <th style="padding:.7rem 1rem;text-align:center;color:var(--accent);font-weight:600">Supporter</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:.65rem 1rem">Color de nombre personalizado</td>
+            <td style="padding:.65rem 1rem;text-align:center;color:var(--danger)">❌</td>
+            <td style="padding:.65rem 1rem;text-align:center;color:var(--success)">✅</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:.65rem 1rem">Ícono de tier al lado del nombre</td>
+            <td style="padding:.65rem 1rem;text-align:center;color:var(--danger)">❌</td>
+            <td style="padding:.65rem 1rem;text-align:center;color:var(--success)">✅</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:.65rem 1rem">Rol Supporter en Discord</td>
+            <td style="padding:.65rem 1rem;text-align:center;color:var(--danger)">❌</td>
+            <td style="padding:.65rem 1rem;text-align:center;color:var(--success)">✅</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:.65rem 1rem">Cambio de nombre</td>
+            <td style="padding:.65rem 1rem;text-align:center;color:var(--muted);font-size:12px">Cada 30 días</td>
+            <td style="padding:.65rem 1rem;text-align:center;color:var(--success);font-size:12px">Cada 7 días</td>
+          </tr>
+          <tr>
+            <td style="padding:.65rem 1rem">Canal prioritario en Discord</td>
+            <td style="padding:.65rem 1rem;text-align:center;color:var(--danger)">❌</td>
+            <td style="padding:.65rem 1rem;text-align:center;color:var(--success)">✅</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Botón Ko-fi -->
+    <div style="text-align:center;padding:1.5rem 0 .5rem">
+      <a href="https://ko-fi.com/freedomdemonlist" target="_blank" rel="noopener"
+         style="display:inline-flex;align-items:center;gap:.65rem;background:linear-gradient(135deg,#ff5f5f,#ff6b35);color:white;text-decoration:none;font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:1px;padding:.85rem 2rem;border-radius:10px;box-shadow:0 4px 20px rgba(255,107,53,.35);transition:all .2s"
+         onmouseover="this.style.opacity='.85';this.style.transform='translateY(-2px)'"
+         onmouseout="this.style.opacity='1';this.style.transform='translateY(0)'">
+        ☕ Donar en Ko-fi
+      </a>
+      <p style="font-size:11px;color:var(--muted);margin-top:.85rem">ko-fi.com/freedomdemonlist</p>
+    </div>
   </div>
 </div>
 

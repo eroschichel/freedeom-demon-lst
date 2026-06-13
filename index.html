@@ -1326,7 +1326,7 @@ const ALL_ICONS={
   hof:      {emoji:"👑", label:"Hall of Fame"},
   top33:    {emoji:"🏆", label:"Top 33 Completer"},
   verified: {emoji:"✅", label:"Verified User"},
-  bughunter:{emoji:"🐛", label:"Bug Hunter"},
+  bughunter:{emoji:"🔍", label:"Bug Hunter"},
 };
 const MAX_ICONS=5;
 function renderIconBadges(icons){
@@ -2117,12 +2117,15 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(!currentUser)return;
     const btn=$("prof-username-save");btn.disabled=true;
     try{
-      // Verificar cooldown de 30 días
+      // Verificar cooldown: 7 días para donadores, 30 para el resto
+      const donorKeys=["star","star2","diamond","fleur","goat"];
+      const isDonor=(getPlayerIcons(currentProfile)||[]).some(k=>donorKeys.includes(k));
+      const cooldownDays=isDonor?7:30;
       const lastChange=currentProfile?.lastUsernameChange;
       if(lastChange){
         const diffDays=(Date.now()-lastChange.toMillis())/86400000;
-        if(diffDays<30){
-          const daysLeft=Math.ceil(30-diffDays);
+        if(diffDays<cooldownDays){
+          const daysLeft=Math.ceil(cooldownDays-diffDays);
           showMsg("prof-username-msg",`❌ Podés cambiar el nombre en ${daysLeft} día${daysLeft!==1?"s":""}.`,"error");
           btn.disabled=false;
           return;
@@ -3105,7 +3108,7 @@ async function renderUsersTable(filter=""){
   if(!users.length){$("users-table-wrap").innerHTML='<div class="empty">Sin usuarios.</div>';return;}
   $("users-table-wrap").innerHTML=`
     <table class="users-table">
-      <thead><tr><th>Usuario</th><th>Email</th><th>Rol</th><th>Acciones</th></tr></thead>
+      <thead><tr><th>Usuario</th>${isAdmin()?'<th>Email</th>':''}<th>Rol</th><th>Acciones</th></tr></thead>
       <tbody>
         ${users.map(u=>{
           const isSelf=u.id===currentUser?.uid;
@@ -3139,7 +3142,7 @@ async function renderUsersTable(filter=""){
             ${u.role!=="banned"&&u.role!=="admin"?`<button class="btn-sm btn-ban" data-uid="${u.id}" data-uname="${u.username||u.email||""}" data-action="ban">Banear</button>`:""}
             ${u.role==="banned"?`<button class="btn-sm btn-unban" data-uid="${u.id}" data-action="unban">Desbanear</button>`:""}
           `;
-          return `<tr><td>${u.username||"—"}${banChips}</td><td style="color:var(--muted)">${u.email}</td><td>${roleBadge}</td><td style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">${actions}</td></tr>`;
+          return `<tr><td>${u.username||"—"}${banChips}</td>${isAdmin()?`<td style="color:var(--muted)">${u.email}</td>`:''}<td>${roleBadge}</td><td style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">${actions}</td></tr>`;
         }).join("")}
       </tbody>
     </table>`;

@@ -1588,7 +1588,7 @@ document.querySelectorAll(".nav-link").forEach(link=>{
       const canEditDemons=false; // movido a pestaña 📋 Demons
       const canRecords=isVerifier();
       const canTools=isMod();
-      const canUsers=isAdmin();
+      const canUsers=isAdmin()||isMod();
       const canUpcoming=isMod();
       const secShow=id=>{const e=$(id);if(e)e.style.display="";};
       const secHide=id=>{const e=$(id);if(e)e.style.display="none";};
@@ -3095,7 +3095,7 @@ function applyLang(lang){
 // ── ADMIN — GESTIÓN USUARIOS (con buscador + rename) ─────────────────────────
 let allUsers=[];
 async function renderUsersTable(filter=""){
-  if(!isAdmin()){$("users-table-wrap").innerHTML='<p style="color:var(--muted);font-size:13px">Solo el admin puede gestionar usuarios.</p>';return;}
+  if(!isAdmin()&&!isMod()){$("users-table-wrap").innerHTML='<p style="color:var(--muted);font-size:13px">Sin acceso.</p>';return;}
   if(!allUsers.length||!filter){
     const snap=await getDocs(collection(db,"users"));
     allUsers=snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -3130,7 +3130,7 @@ async function renderUsersTable(filter=""){
             <button class="btn-sm" style="background:rgba(80,160,255,.1);border:1px solid rgba(80,160,255,.3);color:#50a0ff" data-uid="${u.id}" data-uname="${u.username||""}" data-action="rename">✏️ Username</button>
             <button class="btn-sm" style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);color:#a855f7" data-uid="${u.id}" data-uname="${u.username||""}" data-color="${u.nameColor||''}" data-action="colorname">🎨 Color</button>
             <button class="btn-sm" style="background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.3);color:#ffd700" data-uid="${u.id}" data-uname="${u.username||""}" data-icons="${JSON.stringify(getPlayerIcons(u)).replace(/"/g,'&quot;')}" data-action="playericons">🏅 Iconos</button>
-            ${u.role!=="admin"&&u.role!=="mod"&&u.role!=="helper"&&u.role!=="verifier"?`<button class="btn-sm btn-promote" data-uid="${u.id}" data-action="promote">↑ Mod</button>`:""}
+            ${isAdmin()&&u.role!=="admin"&&u.role!=="mod"&&u.role!=="helper"&&u.role!=="verifier"?`<button class="btn-sm btn-promote" data-uid="${u.id}" data-action="promote">↑ Mod</button>`:""}
             ${u.role==="user"?`<button class="btn-sm" style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--success)" data-uid="${u.id}" data-action="makehelper">🔧 Helper</button>`:""}
             ${u.role==="user"?`<button class="btn-sm" style="background:rgba(80,160,255,.1);border:1px solid rgba(80,160,255,.3);color:#50a0ff" data-uid="${u.id}" data-action="makeverifier">✅ Verificador</button>`:""}
             ${u.role==="mod"?`<button class="btn-sm btn-demote" data-uid="${u.id}" data-action="demote">↓ Usuario</button>`:""}

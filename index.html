@@ -1311,6 +1311,9 @@ function diffBadge(d){
   return `<span class="diff-badge ${m[d]||'diff-hard'}">${l[d]||d}</span>`;
 }
 function rankClass(r){if(r===1)return"gold";if(r===2)return"silver";if(r===3)return"bronze";return"normal";}
+const TIER_ICON={star:"⭐",star2:"🌟",diamond:"💎",trophy:"🏆",goat:"🐐"};
+function tierIcon(tier){return tier&&TIER_ICON[tier]?`<span title="Donor ${tier}" style="font-size:14px;margin-left:4px;vertical-align:middle">${TIER_ICON[tier]}</span>`:"";}
+
 function calcPoints(rank){return demonPoints(rank);}
 function calcDiff(rank){return rank<=75?"extreme":rank<=150?"insane":"hard";}
 
@@ -1815,7 +1818,7 @@ function renderLB(){
     const globalRank=LEADERBOARD.indexOf(p)+1;
     return `<div class="lb-card" data-uid="${p.id}" data-uname="${p.username||p.name||""}" style="cursor:pointer">
       <div class="rank ${rankClass(globalRank)}">#${globalRank}</div>
-      <div class="demon-info"><span class="demon-name${p.nameColor?' name-color-'+p.nameColor:''}">${p.username||p.name}</span></div>
+      <div class="demon-info"><span class="demon-name${p.nameColor?' name-color-'+p.nameColor:''}">${p.username||p.name}</span>${tierIcon(p.donorTier)}</div>
       <div style="font-size:18px" title="${countryName(p.country)}">${flagEmoji(p.country)}</div>
       <div style="font-size:13px">${p.completions||0} completados</div>
       <div class="points align-right">${(p.points||0).toLocaleString()}</div>
@@ -1881,7 +1884,7 @@ async function openProfile(uid,username){
     <div class="profile-header">
       <div class="profile-avatar">${initials}</div>
       <div>
-        <div class="profile-name">${displayUsername}</div>
+        <div class="profile-name">${displayUsername}${tierIcon(lbEntry?.donorTier||firestoreUser?.donorTier)}</div>
         <div class="profile-country">${flagEmoji(country)} ${countryName(country)}</div>
       </div>
       ${pos?`<div style="margin-left:auto;font-family:'Orbitron',monospace;font-size:32px;font-weight:900;color:var(--accent)">#${pos}</div>`:""}
@@ -2000,6 +2003,9 @@ async function renderProfileView(){
   const initials=name.substring(0,2).toUpperCase();
   $("prof-avatar").textContent=initials;
   $("prof-name").textContent=name;
+  if(currentProfile.donorTier&&TIER_ICON[currentProfile.donorTier]){
+    $("prof-name").innerHTML=name+tierIcon(currentProfile.donorTier);
+  }
   $("prof-email").textContent=currentUser.email||"";
   $("prof-username-input").value=name;
   buildCountrySelect("prof-country-select",currentProfile.country||"");

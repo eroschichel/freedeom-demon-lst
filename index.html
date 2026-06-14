@@ -344,6 +344,10 @@ body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;min
 .name-color-orange{color:#f97316!important;font-weight:700}
 .name-color-pink{color:#ec4899!important;font-weight:700}
 .name-color-cyan{color:#06b6d4!important;font-weight:700}
+.name-color-gold{background:linear-gradient(90deg,#bf953f,#fcf6ba,#b38728,#fbf5b7,#aa771c,#bf953f);background-size:300% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent!important;font-weight:700;animation:nameshine 4s linear infinite}
+.name-color-rainbow{background:linear-gradient(90deg,#ff3a6e,#ff6b35,#ffd700,#22c55e,#06b6d4,#a855f7,#ff3a6e);background-size:300% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent!important;font-weight:700;animation:nameshine 5s linear infinite}
+.name-color-fdl{background:linear-gradient(90deg,#ff6b35,#ff3a6e,#a855f7,#ff6b35);background-size:300% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent!important;font-weight:700;animation:nameshine 4s linear infinite}
+@keyframes nameshine{0%{background-position:0% center}100%{background-position:300% center}}
 @media(max-width:640px){
   .list-header{display:none}
   .demon-card{grid-template-columns:50px 1fr}
@@ -888,14 +892,14 @@ body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;min
     <div id="admin-section-upcoming">
     <h3 class="sub-title">🔮 Futuros Niveles (por verificar)</h3>
     <div class="form-card" style="margin-bottom:2rem">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">Listá niveles que podrían entrar a la lista, ordenados por posible posicionamiento. Visibles para todos en la pestaña <b>Próximos</b>.</p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">Listá niveles que podrían entrar a la lista, ordenados por posible posicionamiento. Visibles para todos en la pestaña <b>Próximos</b>. <span style="color:var(--purple)">Al agregar o mover un nivel, las posiciones de los demás se ajustan automáticamente.</span></p>
       <div class="form-row">
         <div class="form-group"><label>Nombre del nivel *</label><input type="text" id="up-name" placeholder="Nombre del demon"/></div>
         <div class="form-group"><label>Publicado por</label><input type="text" id="up-creator" placeholder="Nombre del publicador"/></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Verificador</label><input type="text" id="up-verifier" placeholder="Nombre del verificador"/></div>
-        <div class="form-group"><label>Posible posición estimada</label><input type="number" id="up-est-rank" placeholder="Ej: 5" min="1"/></div>
+        <div class="form-group"><label>Posición deseada</label><input type="number" id="up-est-rank" placeholder="Vacío = al final" min="1"/></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Video URL</label><input type="url" id="up-video" placeholder="https://youtu.be/..."/></div>
@@ -1008,6 +1012,12 @@ body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;min
       <button class="colorname-opt" data-color="pink" style="background:rgba(236,72,153,.15);border:1px solid rgba(236,72,153,.4);border-radius:8px;padding:.6rem;font-size:13px;cursor:pointer;color:#ec4899;font-weight:700;font-family:'Exo 2',sans-serif">Rosa</button>
       <button class="colorname-opt" data-color="cyan" style="background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.4);border-radius:8px;padding:.6rem;font-size:13px;cursor:pointer;color:#06b6d4;font-weight:700;font-family:'Exo 2',sans-serif">Cyan</button>
     </div>
+    <p style="font-size:11px;color:var(--muted);margin:0 0 .6rem;letter-spacing:.5px;text-transform:uppercase">✨ Exclusivos</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1.25rem">
+      <button class="colorname-opt" data-color="gold" style="background:rgba(191,149,63,.1);border:1px solid rgba(191,149,63,.4);border-radius:8px;padding:.6rem;font-size:13px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700"><span class="name-color-gold">⭐ Dorado</span></button>
+      <button class="colorname-opt" data-color="rainbow" style="background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.3);border-radius:8px;padding:.6rem;font-size:13px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700"><span class="name-color-rainbow">🌈 Multicolor</span></button>
+      <button class="colorname-opt" data-color="fdl" style="background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.3);border-radius:8px;padding:.6rem;font-size:13px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700"><span class="name-color-fdl">🔥 FreedomDL</span></button>
+    </div>
     <div id="colorname-msg" class="form-msg"></div>
   </div>
 </div>
@@ -1057,8 +1067,9 @@ body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;min
     </div>
     <div class="form-row">
       <div class="form-group"><label>Verificador</label><input type="text" id="edit-up-verifier"/></div>
-      <div class="form-group"><label>Posición estimada</label><input type="number" id="edit-up-est-rank" min="1"/></div>
+      <div class="form-group"><label>Posición deseada</label><input type="number" id="edit-up-est-rank" min="1"/></div>
     </div>
+    <p style="font-size:11px;color:var(--purple);margin:-.5rem 0 .75rem">Al cambiar la posición, las demás se ajustan automáticamente.</p>
     <div class="form-group"><label>Video URL</label><input type="url" id="edit-up-video" placeholder="https://youtu.be/..."/></div>
     <div class="form-group"><label>Notas / Estado</label><input type="text" id="edit-up-notes" placeholder="Ej: En proceso, falta buffear parte X..."/></div>
     <button class="submit-btn" id="edit-upcoming-save">Guardar cambios</button>
@@ -1893,6 +1904,7 @@ async function openProfile(uid,username){
   // Usar datos de firestoreUser como fallback
   const displayUsername = lbEntry?.username || firestoreUser?.username || username;
   const displayCountry = lbEntry?.country || firestoreUser?.country || "??";
+  const displayNameColor = lbEntry?.nameColor || firestoreUser?.nameColor || "";
 
   // juntar solo el mejor record por demon para este jugador
   const bestByDemonProfile=new Map();
@@ -1915,7 +1927,7 @@ async function openProfile(uid,username){
     <div class="profile-header">
       <div class="profile-avatar">${initials}</div>
       <div>
-        <div class="profile-name">${displayUsername}${renderIconBadges(getPlayerIcons(lbEntry||firestoreUser))}</div>
+        <div class="profile-name"><span${displayNameColor?` class="name-color-${displayNameColor}"`:""}>${displayUsername}</span>${renderIconBadges(getPlayerIcons(lbEntry||firestoreUser))}</div>
         <div class="profile-country">${flagEmoji(country)} ${countryName(country)}</div>
       </div>
       ${pos?`<div style="margin-left:auto;font-family:'Orbitron',monospace;font-size:32px;font-weight:900;color:var(--accent)">#${pos}</div>`:""}
@@ -2033,11 +2045,9 @@ async function renderProfileView(){
   const name=currentProfile.username||currentUser.email||"?";
   const initials=name.substring(0,2).toUpperCase();
   $("prof-avatar").textContent=initials;
-  $("prof-name").textContent=name;
+  const profColor=currentProfile.nameColor||"";
   const profIcons=getPlayerIcons(currentProfile);
-  if(profIcons.length){
-    $("prof-name").innerHTML=name+renderIconBadges(profIcons);
-  }
+  $("prof-name").innerHTML=(profColor?`<span class="name-color-${profColor}">${name}</span>`:name)+renderIconBadges(profIcons);
   $("prof-email").textContent=currentUser.email||"";
   $("prof-username-input").value=name;
   buildCountrySelect("prof-country-select",currentProfile.country||"");
@@ -3398,6 +3408,39 @@ $("ban-confirm-btn").onclick=async()=>{
   $("ban-confirm-btn").disabled=false;
 };
 
+// Renumera estRank=1,2,3... para todos los docs existentes, sin mover ninguno
+// de lugar entre sí (usado tras borrar uno, para cerrar el hueco).
+async function normalizeUpcomingRanks(){
+  const snap=await getDocs(query(collection(db,"upcoming"),orderBy("estRank","asc")));
+  const batch=writeBatch(db);
+  let ops=0;
+  snap.docs.forEach((d,i)=>{
+    const newRank=i+1;
+    if((d.data().estRank??null)!==newRank){batch.update(doc(db,"upcoming",d.id),{estRank:newRank});ops++;}
+  });
+  if(ops>0)await batch.commit();
+}
+// Reordena automáticamente la lista de "upcoming": saca el doc movingId de donde esté,
+// lo inserta en la posición desiredPos (1-based, se ajusta a los límites) y renumera
+// estRank=1,2,3... para todos, en batch. Así nunca hay que tocar a los demás a mano.
+async function reorderUpcoming(movingId,desiredPos){
+  const snap=await getDocs(query(collection(db,"upcoming"),orderBy("estRank","asc")));
+  let arr=snap.docs.map(d=>({id:d.id,estRank:d.data().estRank??999}));
+  const idx=arr.findIndex(d=>d.id===movingId);
+  let moving;
+  if(idx>=0)moving=arr.splice(idx,1)[0];
+  else moving={id:movingId,estRank:desiredPos};
+  let pos=Math.max(1,Math.min(Math.round(desiredPos)||(arr.length+1),arr.length+1));
+  arr.splice(pos-1,0,moving);
+  const batch=writeBatch(db);
+  let ops=0;
+  arr.forEach((d,i)=>{
+    const newRank=i+1;
+    if(d.estRank!==newRank){batch.update(doc(db,"upcoming",d.id),{estRank:newRank});ops++;}
+  });
+  if(ops>0)await batch.commit();
+}
+
 // ── UPCOMING DEMONS ───────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded",()=>{
   const upBtn=$("up-submit");
@@ -3407,14 +3450,15 @@ document.addEventListener("DOMContentLoaded",()=>{
       const name=$("up-name").value.trim();
       const creator=$("up-creator").value.trim();
       const verifier=$("up-verifier").value.trim();
-      const estRank=Number($("up-est-rank").value)||999;
+      const desiredPos=Number($("up-est-rank").value)||9999; // vacío = al final
       const video=$("up-video").value.trim();
       const notes=$("up-notes").value.trim();
       if(!name)return showMsg("up-msg","Ingresá el nombre del nivel.","error");
       upBtn.disabled=true;
       try{
-        await addDoc(collection(db,"upcoming"),{name,creator,verifier,estRank,video,notes,createdAt:serverTimestamp(),addedBy:currentProfile?.username||"?"});
-        showMsg("up-msg","✓ Nivel futuro agregado.","success");
+        const ref=await addDoc(collection(db,"upcoming"),{name,creator,verifier,estRank:desiredPos,video,notes,createdAt:serverTimestamp(),addedBy:currentProfile?.username||"?"});
+        await reorderUpcoming(ref.id,desiredPos);
+        showMsg("up-msg","✓ Nivel futuro agregado. Posiciones actualizadas.","success");
         ["up-name","up-creator","up-verifier","up-est-rank","up-video","up-notes"].forEach(id=>{if($(id))$(id).value="";});
         renderAdminUpcoming();
       }catch(e){showMsg("up-msg","Error: "+e.message,"error");}
@@ -3428,28 +3472,51 @@ function renderAdminUpcoming(){
   if(!el)return;
   getDocs(query(collection(db,"upcoming"),orderBy("estRank","asc"))).then(snap=>{
     if(snap.empty){el.innerHTML='<div class="empty">No hay futuros niveles cargados.</div>';return;}
-    el.innerHTML=snap.docs.map(d=>{
+    const total=snap.docs.length;
+    el.innerHTML=snap.docs.map((d,i)=>{
       const u=d.data();
+      const pos=i+1;
       return `<div class="admin-demon-row" style="border-color:rgba(168,85,247,.3)">
-        <span class="admin-demon-rank" style="color:var(--purple)">~#${u.estRank}</span>
+        <span class="admin-demon-rank" style="color:var(--purple)">~#${pos}</span>
         <span class="admin-demon-name">${u.name}${u.creator?` <span style="font-size:11px;color:var(--muted)">by ${u.creator}</span>`:""}${u.verifier?` <span style="font-size:11px;color:#50a0ff">✔ ${u.verifier}</span>`:""}</span>
         ${u.notes?`<span style="font-size:11px;color:var(--purple);font-style:italic;flex:1">${u.notes}</span>`:'<span style="flex:1"></span>'}
         ${u.video?`<a href="${u.video}" target="_blank" style="color:var(--accent);font-size:11px;text-decoration:none;border:1px solid rgba(255,107,53,.3);padding:2px 7px;border-radius:4px">▶ video</a>`:""}
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <button class="btn-up-upcoming" data-id="${d.id}" data-pos="${pos}" ${pos===1?'disabled style="opacity:.3;cursor:default"':''} style="background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:10px;line-height:1;padding:2px 5px;cursor:pointer">▲</button>
+          <button class="btn-down-upcoming" data-id="${d.id}" data-pos="${pos}" ${pos===total?'disabled style="opacity:.3;cursor:default"':''} style="background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:10px;line-height:1;padding:2px 5px;cursor:pointer">▼</button>
+        </div>
         <button class="btn-edit-demon btn-edit-upcoming" data-id="${d.id}" style="flex-shrink:0">✏️ Editar</button>
         <button class="btn-del-demon" data-id="${d.id}" style="flex-shrink:0">🗑 Quitar</button>
       </div>`;
     }).join("");
+    el.querySelectorAll(".btn-up-upcoming").forEach(btn=>{
+      btn.onclick=async()=>{
+        if(btn.disabled)return;
+        const pos=Number(btn.dataset.pos);
+        await reorderUpcoming(btn.dataset.id,pos-1);
+        renderAdminUpcoming();
+      };
+    });
+    el.querySelectorAll(".btn-down-upcoming").forEach(btn=>{
+      btn.onclick=async()=>{
+        if(btn.disabled)return;
+        const pos=Number(btn.dataset.pos);
+        await reorderUpcoming(btn.dataset.id,pos+1);
+        renderAdminUpcoming();
+      };
+    });
     el.querySelectorAll(".btn-edit-upcoming").forEach(btn=>{
       btn.onclick=()=>{
-        const snap_doc=snap.docs.find(x=>x.id===btn.dataset.id);
+        const idx=snap.docs.findIndex(x=>x.id===btn.dataset.id);
+        const snap_doc=snap.docs[idx];
         if(!snap_doc)return;
         const u=snap_doc.data();
         $("edit-upcoming-id").value=snap_doc.id;
-        $("edit-upcoming-subtitle").textContent=`~#${u.estRank} — ${u.name}`;
+        $("edit-upcoming-subtitle").textContent=`~#${idx+1} — ${u.name}`;
         $("edit-up-name").value=u.name||"";
         $("edit-up-creator").value=u.creator||"";
         $("edit-up-verifier").value=u.verifier||"";
-        $("edit-up-est-rank").value=u.estRank||"";
+        $("edit-up-est-rank").value=idx+1;
         $("edit-up-video").value=u.video||"";
         $("edit-up-notes").value=u.notes||"";
         $("edit-upcoming-modal").classList.add("open");
@@ -3459,6 +3526,7 @@ function renderAdminUpcoming(){
       btn.onclick=async()=>{
         if(!confirm("¿Quitar este nivel futuro?"))return;
         await deleteDoc(doc(db,"upcoming",btn.dataset.id));
+        await normalizeUpcomingRanks();
         renderAdminUpcoming();
       };
     });
@@ -3476,17 +3544,18 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(!name)return showMsg("edit-upcoming-msg","El nombre es obligatorio.","error");
     const btn=$("edit-upcoming-save");btn.disabled=true;
     try{
+      const desiredPos=Number($("edit-up-est-rank").value)||9999;
       await updateDoc(doc(db,"upcoming",id),{
         name,
         creator:$("edit-up-creator").value.trim(),
         verifier:$("edit-up-verifier").value.trim(),
-        estRank:Number($("edit-up-est-rank").value)||999,
         video:$("edit-up-video").value.trim(),
         notes:$("edit-up-notes").value.trim(),
         updatedAt:serverTimestamp(),
         updatedBy:currentProfile?.username||"?"
       });
-      showMsg("edit-upcoming-msg","✓ Guardado.","success");
+      await reorderUpcoming(id,desiredPos);
+      showMsg("edit-upcoming-msg","✓ Guardado. Posiciones actualizadas.","success");
       setTimeout(()=>{$("edit-upcoming-modal").classList.remove("open");renderAdminUpcoming();},700);
     }catch(e){showMsg("edit-upcoming-msg","Error: "+e.message,"error");}
     btn.disabled=false;

@@ -4041,7 +4041,7 @@ function openClanModal(clanId) {
 
   const membersWithPts = allMembers.map(m=>{
     const lb = LEADERBOARD.find(p=>(p.username||p.name||"").toLowerCase()===m.uname.toLowerCase());
-    return {...m, pts:lb?(lb.points||0):0, pos:lb?LEADERBOARD.indexOf(lb)+1:null};
+    return {...m, pts:lb?(lb.points||0):0, pos:lb?LEADERBOARD.indexOf(lb)+1:null, nameColor:lb?.nameColor||"", icons:getPlayerIcons(lb)};
   }).sort((a,b)=>{
     const ro = {"leader":0,"co-leader":1,"member":2};
     return (ro[a.role]||2)-(ro[b.role]||2) || b.pts-a.pts;
@@ -4050,7 +4050,9 @@ function openClanModal(clanId) {
   const membersHtml = membersWithPts.map(m=>`
     <div class="clan-member-row">
       <span style="font-size:11px;color:${roleColor[m.role]||"var(--muted)"};min-width:72px;font-weight:600">${roleLabel[m.role]||"Miembro"}</span>
-      <span class="clan-member-name" style="cursor:pointer;text-decoration:underline;text-decoration-color:rgba(255,255,255,.2)" onclick="openProfile(null,'${m.uname}')">${m.uname}</span>
+      <span class="clan-member-name" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap">
+        <span${m.nameColor?` class="name-color-${m.nameColor}"`:""} style="cursor:pointer;text-decoration:underline;text-decoration-color:rgba(255,255,255,.2)" onclick="openProfile(null,'${m.uname}')">${m.uname}</span>${renderIconBadges(m.icons)}
+      </span>
       ${m.pos?`<span style="font-size:12px;color:var(--muted)">#${m.pos}</span>`:""}
       <span class="clan-member-pts">${m.pts.toLocaleString()} pts</span>
       ${canManage && m.uname !== clan.leader && m.role!=="leader" ? `
@@ -4065,12 +4067,15 @@ function openClanModal(clanId) {
   const pendingJoin = CLAN_REQUESTS_CACHE.filter(r=>r.clanId===clanId && r.status==="pending");
   const pendingJoinHtml = canManage && pendingJoin.length ? `
     <div class="records-title" style="margin-top:1.25rem;color:var(--gold)">⏳ Solicitudes de unión (${pendingJoin.length})</div>
-    ${pendingJoin.map(r=>`
+    ${pendingJoin.map(r=>{
+      const lb=LEADERBOARD.find(p=>(p.username||p.name||"").toLowerCase()===(r.username||"").toLowerCase());
+      const nc=lb?.nameColor||"";
+      return `
       <div class="clan-member-row">
-        <span class="clan-member-name">${r.username}</span>
+        <span class="clan-member-name" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap"><span${nc?` class="name-color-${nc}"`:""}>${r.username}</span>${renderIconBadges(getPlayerIcons(lb))}</span>
         <button class="btn-accept btn-sm" data-req-id="${r.id}" data-action="accept-join" data-clan="${clanId}" data-uname="${r.username}">✓ Aceptar</button>
         <button class="btn-reject btn-sm" data-req-id="${r.id}" data-action="reject-join">✕ Rechazar</button>
-      </div>`).join("")}
+      </div>`;}).join("")}
   ` : "";
 
   const demonsHtml = demons.length

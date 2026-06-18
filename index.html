@@ -627,7 +627,7 @@ body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;min
       <div class="form-group">
         <label>Nombre de jugador</label>
         <div style="display:flex;gap:.6rem">
-          <input type="text" id="prof-username-input" placeholder="Tu nombre en el leaderboard..." style="flex:1"/>
+          <input type="text" id="prof-username-input" placeholder="Tu nombre en el leaderboard..." style="flex:1" maxlength="20"/>
           <button id="prof-username-save" class="submit-btn" style="width:auto;padding:.65rem 1.2rem;margin-top:0">Guardar</button>
         </div>
         <div id="prof-username-msg" class="form-msg" style="margin-top:.5rem"></div>
@@ -1160,7 +1160,7 @@ body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;min
     <div id="auth-register-panel" style="display:none">
       <h2>Crear Cuenta</h2>
       <p>Unite a la Freedom Demon List</p>
-      <div class="form-group"><label>Nombre de jugador *</label><input type="text" id="reg-username" placeholder="TuNombre"/></div>
+      <div class="form-group"><label>Nombre de jugador *</label><input type="text" id="reg-username" placeholder="TuNombre" maxlength="20"/></div>
       <div class="form-group"><label>Email *</label><input type="email" id="reg-email" placeholder="tu@email.com"/></div>
       <div class="form-group"><label>Contraseña *</label><input type="password" id="reg-pass" placeholder="mínimo 6 caracteres"/></div>
       <button class="submit-btn" id="register-btn">Crear Cuenta</button>
@@ -1336,6 +1336,27 @@ function buildCountrySelect(selId,selectedCode=""){
 
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
+// Escapa caracteres especiales de HTML antes de insertar texto de usuario en innerHTML
+// o dentro de atributos. Usar SIEMPRE que se inyecte un dato que el usuario controla
+// (username, player, etc.) dentro de un template literal HTML.
+function escapeHtml(str){
+  return String(str ?? "").replace(/[&<>"']/g, ch => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[ch]));
+}
+
+// Valida que un nombre de usuario tenga un formato seguro y razonable.
+// Solo letras (con acentos), números, espacios, guion, guion bajo y punto.
+// Entre 3 y 20 caracteres, sin espacios al principio/final ni dobles espacios.
+const USERNAME_REGEX = /^[A-Za-zÀ-ÖØ-öø-ÿ0-9 _.-]{3,20}$/;
+function validateUsername(name){
+  const trimmed = (name || "").trim().replace(/\s+/g, " ");
+  if (trimmed.length < 3) return { ok:false, msg:"El nombre debe tener al menos 3 caracteres.", value:trimmed };
+  if (trimmed.length > 20) return { ok:false, msg:"El nombre no puede superar los 20 caracteres.", value:trimmed };
+  if (!USERNAME_REGEX.test(trimmed)) return { ok:false, msg:"El nombre solo puede tener letras, números, espacios, guiones (-) y guion bajo (_).", value:trimmed };
+  return { ok:true, msg:"", value:trimmed };
+}
+
 function isNewDemon(d){
   if(!d.isNew)return false;
   if(!d.createdAt)return true;
@@ -1526,11 +1547,14 @@ $("switch-to-login").onclick=()=>{$("auth-register-panel").style.display="none";
 
 // ── REGISTER ──────────────────────────────────────────────────────────────────
 $("register-btn").onclick=async()=>{
-  const username=$("reg-username").value.trim();
+  let username=$("reg-username").value.trim();
   const email=$("reg-email").value.trim();
   const pass=$("reg-pass").value;
   if(!username||!email||!pass)return showMsg("register-msg","Completá todos los campos.","error");
   if(pass.length<6)return showMsg("register-msg","La contraseña debe tener al menos 6 caracteres.","error");
+  const unameCheck=validateUsername(username);
+  if(!unameCheck.ok)return showMsg("register-msg",unameCheck.msg,"error");
+  username=unameCheck.value;
   $("register-btn").disabled=true;
   try{
     // Verificar si el nombre de usuario ya está en uso
@@ -1540,11 +1564,17 @@ $("register-btn").onclick=async()=>{
       $("register-btn").disabled=false;
       return;
     }
-    // check if first user
-    const usersSnap=await getDocs(collection(db,"users"));
-    const isFirst=usersSnap.empty;
+    // Nota de seguridad: el rol SIEMPRE se crea como "user" desde el cliente.
+    // Ya no se intenta detectar "soy el primer usuario → admin", porque esa
+    // lógica dependía de que las reglas de Firestore confiaran ciegamente en
+    // lo que mandaba el navegador, y eso es falsificable desde la consola del
+    // navegador. Para convertir tu propia cuenta en admin la primera vez,
+    // hacelo manualmente desde la consola de Firebase (Firestore Database →
+    // colección "users" → tu documento → cambiar el campo "role" a "admin").
+    // Una vez deployadas las reglas (firestore.rules), ningún otro usuario
+    // va a poder hacer ese mismo cambio por su cuenta.
     const cred=await createUserWithEmailAndPassword(auth,email,pass);
-    const newRole = isFirst?"admin":"user";
+    const newRole = "user";
     await setDoc(doc(db,"users",cred.user.uid),{
       username, email,
       usernameLower: username.toLowerCase(),
@@ -1812,11 +1842,11 @@ function openModal(id){
         ${r.pinned?`<span class="record-pin-badge">📌 Fijado</span>`:""}
         <span class="record-progress">${r.progress}%</span>
         <span style="font-size:16px" title="${countryName(r.country)}">${flagEmoji(r.country)}</span>
-        <span class="record-player">${r.player}</span>
+        <span class="record-player">${escapeHtml(r.player)}</span>
         ${r.video?`<a href="${r.video}" target="_blank" style="color:var(--accent);font-size:11px;text-decoration:none;border:1px solid rgba(255,107,53,.3);padding:2px 7px;border-radius:4px">▶ video</a>`:""}
         ${canPin?(r.pinned
-          ?`<button class="btn-unpin" data-demon-id="${d.id}" data-player="${r.player}">✕ Desanclar</button>`
-          :`<button class="btn-pin" data-demon-id="${d.id}" data-player="${r.player}">📌 Anclar</button>`
+          ?`<button class="btn-unpin" data-demon-id="${d.id}" data-player="${escapeHtml(r.player)}">✕ Desanclar</button>`
+          :`<button class="btn-pin" data-demon-id="${d.id}" data-player="${escapeHtml(r.player)}">📌 Anclar</button>`
         ):""}
       </div>`).join("")
     :'<p style="color:var(--muted);font-size:13px;padding:.5rem 0">Sin records aún.</p>';
@@ -1882,9 +1912,9 @@ function renderLB(){
     :LEADERBOARD;
   $("lb-list").innerHTML=filtered.map((p)=>{
     const globalRank=LEADERBOARD.indexOf(p)+1;
-    return `<div class="lb-card" data-uid="${p.id}" data-uname="${p.username||p.name||""}" style="cursor:pointer">
+    return `<div class="lb-card" data-uid="${p.id}" data-uname="${escapeHtml(p.username||p.name||"")}" style="cursor:pointer">
       <div class="rank ${rankClass(globalRank)}">#${globalRank}</div>
-      <div class="demon-info"><span style="display:flex;align-items:center;gap:2px;flex-wrap:wrap"><span class="demon-name${p.nameColor?' name-color-'+p.nameColor:''}">${p.username||p.name}</span>${renderIconBadges(getPlayerIcons(p))}</span></div>
+      <div class="demon-info"><span style="display:flex;align-items:center;gap:2px;flex-wrap:wrap"><span class="demon-name${p.nameColor?' name-color-'+p.nameColor:''}">${escapeHtml(p.username||p.name)}</span>${renderIconBadges(getPlayerIcons(p))}</span></div>
       <div style="font-size:18px" title="${countryName(p.country)}">${flagEmoji(p.country)}</div>
       <div style="font-size:13px">${p.completions||0} completados</div>
       <div class="points align-right">${(p.points||0).toLocaleString()}</div>
@@ -1951,7 +1981,7 @@ async function openProfile(uid,username){
     <div class="profile-header">
       <div class="profile-avatar">${initials}</div>
       <div>
-        <div class="profile-name"><span${displayNameColor?` class="name-color-${displayNameColor}"`:""}>${displayUsername}</span>${renderIconBadges(getPlayerIcons(lbEntry||firestoreUser))}</div>
+        <div class="profile-name"><span${displayNameColor?` class="name-color-${displayNameColor}"`:""}>${escapeHtml(displayUsername)}</span>${renderIconBadges(getPlayerIcons(lbEntry||firestoreUser))}</div>
         <div class="profile-country">${flagEmoji(country)} ${countryName(country)}</div>
       </div>
       ${pos?`<div style="margin-left:auto;font-family:'Orbitron',monospace;font-size:32px;font-weight:900;color:var(--accent)">#${pos}</div>`:""}
@@ -1988,7 +2018,7 @@ async function openProfile(uid,username){
       const isLegacyNow=DEMONS.find(x=>x.id===r.demonId)?.legacy||(r.demonRank>150);
       const was50=r.progress<100&&r.progress>=50;
       const obsolete=was50&&isLegacyNow?`<span style="font-size:10px;color:var(--danger);margin-left:4px">⚠️ Legacy</span>`:"";
-      const removeBtn=isMod()?`<button class="btn-sm btn-reject" style="font-size:10px;padding:2px 8px" data-demon-id="${r.demonId}" data-player="${username}" data-progress="${r.progress}">🗑 Retirar</button>`:"";
+      const removeBtn=isMod()?`<button class="btn-sm btn-reject" style="font-size:10px;padding:2px 8px" data-demon-id="${r.demonId}" data-player="${escapeHtml(username)}" data-progress="${r.progress}">🗑 Retirar</button>`:"";
       return `
       <div class="profile-rec-row">
         <span style="font-family:'Orbitron',monospace;font-size:12px;color:var(--muted);min-width:36px">#${r.demonRank}</span>
@@ -2077,7 +2107,7 @@ async function renderProfileView(){
   $("prof-avatar").textContent=initials;
   const profColor=currentProfile.nameColor||"";
   const profIcons=getPlayerIcons(currentProfile);
-  $("prof-name").innerHTML=(profColor?`<span class="name-color-${profColor}">${name}</span>`:name)+renderIconBadges(profIcons);
+  $("prof-name").innerHTML=(profColor?`<span class="name-color-${profColor}">${escapeHtml(name)}</span>`:escapeHtml(name))+renderIconBadges(profIcons);
   $("prof-email").textContent=currentUser.email||"";
   $("prof-username-input").value=name;
   buildCountrySelect("prof-country-select",currentProfile.country||"");
@@ -2152,9 +2182,13 @@ async function renderProfileView(){
 // Guardar nombre desde perfil
 document.addEventListener("DOMContentLoaded",()=>{
   $("prof-username-save")?.addEventListener("click",async()=>{
-    const newName=$("prof-username-input")?.value.trim();
-    if(!newName)return showMsg("prof-username-msg","Ingresá un nombre.","error");
+    const rawName=$("prof-username-input")?.value.trim();
+    if(!rawName)return showMsg("prof-username-msg","Ingresá un nombre.","error");
     if(!currentUser)return;
+    if(!requireVerified("prof-username-msg"))return;
+    const unameCheck=validateUsername(rawName);
+    if(!unameCheck.ok)return showMsg("prof-username-msg",unameCheck.msg,"error");
+    const newName=unameCheck.value;
     const btn=$("prof-username-save");btn.disabled=true;
     try{
       // Verificar cooldown: 7 días para donadores, 30 para el resto
@@ -2440,7 +2474,7 @@ function renderPending(){
       const r=d.data();
       return `<div class="pending-card">
         <div class="pending-info">
-          <div class="pending-name">${r.player} — ${r.progress}% en #${r.demonRank} ${r.demon}</div>
+          <div class="pending-name">${escapeHtml(r.player)} — ${r.progress}% en #${r.demonRank} ${r.demon}</div>
           <div class="pending-meta"><a href="${r.video}" target="_blank" style="color:var(--accent)">ver video</a></div>
         </div>
         <button class="btn-accept" data-id="${d.id}">✓ Aceptar</button>
@@ -2650,7 +2684,7 @@ function renderRejected(){
       const date=r.rejectedAt?.toDate?r.rejectedAt.toDate().toLocaleDateString("es-AR"):"-";
       return `<div class="rejected-card" data-rej-id="${d.id}">
         <div class="rej-info">
-          <div class="rej-name">${r.player} — ${r.progress}% en ${r.demon||"?"} <small style="color:var(--muted)">#${r.demonRank||"?"}</small></div>
+          <div class="rej-name">${escapeHtml(r.player)} — ${r.progress}% en ${r.demon||"?"} <small style="color:var(--muted)">#${r.demonRank||"?"}</small></div>
           <div class="rej-meta">Rechazado el ${date}${r.reason?` · Razón: ${r.reason}`:""}</div>
         </div>
         <div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0;flex-wrap:wrap">
@@ -2795,11 +2829,11 @@ document.addEventListener("DOMContentLoaded",()=>{
       resultsEl.innerHTML=playerRecords.map((r,i)=>`
         <div class="rejected-card" data-idx="${i}" style="border-color:rgba(80,160,255,.25)">
           <div class="rej-info">
-            <div class="rej-name">${r.player} — ${r.progress}% en ${r.demonName} <small style="color:var(--muted)">#${r.demonRank}</small></div>
+            <div class="rej-name">${escapeHtml(r.player)} — ${r.progress}% en ${r.demonName} <small style="color:var(--muted)">#${r.demonRank}</small></div>
             ${r.video?`<a href="${r.video}" target="_blank" style="font-size:11px;color:var(--accent)">▶ video</a>`:""}
           </div>
           <button class="btn-remove-player-rec btn-reject" style="font-size:11px;padding:3px 10px;flex-shrink:0"
-            data-demon-id="${r.demonId}" data-player="${r.player}" data-progress="${r.progress}" data-demon-name="${r.demonName}" data-demon-rank="${r.demonRank}">
+            data-demon-id="${r.demonId}" data-player="${escapeHtml(r.player)}" data-progress="${r.progress}" data-demon-name="${r.demonName}" data-demon-rank="${r.demonRank}">
             🗑 Retirar
           </button>
         </div>`).join("");
@@ -2916,7 +2950,7 @@ document.addEventListener("DOMContentLoaded",()=>{
               points:correctPoints,
               completions:correctCompletions
             });
-            report.push(`<li style="color:var(--accent)">LB <b>${lbData.username}</b>: puntos ${currentPoints}→${correctPoints}, completions ${currentCompletions}→${correctCompletions}</li>`);
+            report.push(`<li style="color:var(--accent)">LB <b>${escapeHtml(lbData.username)}</b>: puntos ${currentPoints}→${correctPoints}, completions ${currentCompletions}→${correctCompletions}</li>`);
             lbFixed++;
           }
         }
@@ -3169,20 +3203,20 @@ async function renderUsersTable(filter=""){
               banChips+=`<span class="ban-expiry-chip">Permanente</span>`;
             }
           }
-          const actions=isSelf?`<span style="color:var(--muted);font-size:11px">(vos)</span> <button class="btn-sm" style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);color:#a855f7" data-uid="${u.id}" data-uname="${u.username||""}" data-color="${u.nameColor||''}" data-action="colorname">🎨 Color</button>`:`
-            <button class="btn-sm" style="background:rgba(80,160,255,.1);border:1px solid rgba(80,160,255,.3);color:#50a0ff" data-uid="${u.id}" data-uname="${u.username||""}" data-action="rename">✏️ Username</button>
-            <button class="btn-sm" style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);color:#a855f7" data-uid="${u.id}" data-uname="${u.username||""}" data-color="${u.nameColor||''}" data-action="colorname">🎨 Color</button>
-            <button class="btn-sm" style="background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.3);color:#ffd700" data-uid="${u.id}" data-uname="${u.username||""}" data-icons="${JSON.stringify(getPlayerIcons(u)).replace(/"/g,'&quot;')}" data-action="playericons">🏅 Iconos</button>
+          const actions=isSelf?`<span style="color:var(--muted);font-size:11px">(vos)</span> <button class="btn-sm" style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);color:#a855f7" data-uid="${u.id}" data-uname="${escapeHtml(u.username||"")}" data-color="${u.nameColor||''}" data-action="colorname">🎨 Color</button>`:`
+            <button class="btn-sm" style="background:rgba(80,160,255,.1);border:1px solid rgba(80,160,255,.3);color:#50a0ff" data-uid="${u.id}" data-uname="${escapeHtml(u.username||"")}" data-action="rename">✏️ Username</button>
+            <button class="btn-sm" style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);color:#a855f7" data-uid="${u.id}" data-uname="${escapeHtml(u.username||"")}" data-color="${u.nameColor||''}" data-action="colorname">🎨 Color</button>
+            <button class="btn-sm" style="background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.3);color:#ffd700" data-uid="${u.id}" data-uname="${escapeHtml(u.username||"")}" data-icons="${JSON.stringify(getPlayerIcons(u)).replace(/"/g,'&quot;')}" data-action="playericons">🏅 Iconos</button>
             ${isAdmin()&&u.role!=="admin"&&u.role!=="mod"&&u.role!=="helper"&&u.role!=="verifier"?`<button class="btn-sm btn-promote" data-uid="${u.id}" data-action="promote">↑ Mod</button>`:""}
             ${u.role==="user"?`<button class="btn-sm" style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--success)" data-uid="${u.id}" data-action="makehelper">🔧 Helper</button>`:""}
             ${u.role==="user"?`<button class="btn-sm" style="background:rgba(80,160,255,.1);border:1px solid rgba(80,160,255,.3);color:#50a0ff" data-uid="${u.id}" data-action="makeverifier">✅ Verificador</button>`:""}
             ${u.role==="mod"?`<button class="btn-sm btn-demote" data-uid="${u.id}" data-action="demote">↓ Usuario</button>`:""}
             ${u.role==="helper"?`<button class="btn-sm btn-demote" data-uid="${u.id}" data-action="demote">↓ Usuario</button>`:""}
             ${u.role==="verifier"?`<button class="btn-sm btn-demote" data-uid="${u.id}" data-action="demote">↓ Usuario</button>`:""}
-            ${u.role!=="banned"&&u.role!=="admin"?`<button class="btn-sm btn-ban" data-uid="${u.id}" data-uname="${u.username||u.email||""}" data-action="ban">Banear</button>`:""}
+            ${u.role!=="banned"&&u.role!=="admin"?`<button class="btn-sm btn-ban" data-uid="${u.id}" data-uname="${escapeHtml(u.username||u.email||"")}" data-action="ban">Banear</button>`:""}
             ${u.role==="banned"?`<button class="btn-sm btn-unban" data-uid="${u.id}" data-action="unban">Desbanear</button>`:""}
           `;
-          return `<tr><td>${u.username||"—"}${banChips}</td>${isAdmin()?`<td style="color:var(--muted)">${u.email}</td>`:''}<td>${roleBadge}</td><td style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">${actions}</td></tr>`;
+          return `<tr><td>${escapeHtml(u.username||"—")}${banChips}</td>${isAdmin()?`<td style="color:var(--muted)">${u.email}</td>`:''}<td>${roleBadge}</td><td style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">${actions}</td></tr>`;
         }).join("")}
       </tbody>
     </table>`;
@@ -3993,7 +4027,7 @@ function renderClanList() {
       ? demons.map(d=>`<div class="clan-demon-row">
           <span class="clan-demon-rank">#${d.demonRank}</span>
           <span class="clan-demon-name">${d.demonName}</span>
-          <span class="clan-demon-player">${d.player}</span>
+          <span class="clan-demon-player">${escapeHtml(d.player)}</span>
         </div>`).join("")
       : '<div style="font-size:12px;color:var(--muted);padding:.25rem 0">Sin demons completados aún.</div>';
     return `<div class="clan-card" data-clan-id="${c.id}">
@@ -4041,7 +4075,7 @@ function openClanModal(clanId) {
 
   const membersWithPts = allMembers.map(m=>{
     const lb = LEADERBOARD.find(p=>(p.username||p.name||"").toLowerCase()===m.uname.toLowerCase());
-    return {...m, pts:lb?(lb.points||0):0, pos:lb?LEADERBOARD.indexOf(lb)+1:null, nameColor:lb?.nameColor||"", icons:getPlayerIcons(lb)};
+    return {...m, pts:lb?(lb.points||0):0, pos:lb?LEADERBOARD.indexOf(lb)+1:null};
   }).sort((a,b)=>{
     const ro = {"leader":0,"co-leader":1,"member":2};
     return (ro[a.role]||2)-(ro[b.role]||2) || b.pts-a.pts;
@@ -4050,16 +4084,14 @@ function openClanModal(clanId) {
   const membersHtml = membersWithPts.map(m=>`
     <div class="clan-member-row">
       <span style="font-size:11px;color:${roleColor[m.role]||"var(--muted)"};min-width:72px;font-weight:600">${roleLabel[m.role]||"Miembro"}</span>
-      <span class="clan-member-name" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap">
-        <span${m.nameColor?` class="name-color-${m.nameColor}"`:""} style="cursor:pointer;text-decoration:underline;text-decoration-color:rgba(255,255,255,.2)" onclick="openProfile(null,'${m.uname}')">${m.uname}</span>${renderIconBadges(m.icons)}
-      </span>
+      <span class="clan-member-name" style="cursor:pointer;text-decoration:underline;text-decoration-color:rgba(255,255,255,.2)" data-view-profile="1" data-uname="${escapeHtml(m.uname)}">${escapeHtml(m.uname)}</span>
       ${m.pos?`<span style="font-size:12px;color:var(--muted)">#${m.pos}</span>`:""}
       <span class="clan-member-pts">${m.pts.toLocaleString()} pts</span>
       ${canManage && m.uname !== clan.leader && m.role!=="leader" ? `
         <div style="display:flex;gap:.35rem">
-          ${myRole==="leader" && m.role==="member" ? `<button class="btn-sm btn-promote" style="font-size:10px" data-action="promote" data-clan="${clanId}" data-uname="${m.uname}">⭐ Co-líder</button>` : ""}
-          ${myRole==="leader" && m.role==="co-leader" ? `<button class="btn-sm btn-demote" style="font-size:10px" data-action="demote" data-clan="${clanId}" data-uname="${m.uname}">↓ Miembro</button>` : ""}
-          <button class="btn-sm btn-reject" style="font-size:10px" data-action="kick" data-clan="${clanId}" data-uname="${m.uname}">✕ Sacar</button>
+          ${myRole==="leader" && m.role==="member" ? `<button class="btn-sm btn-promote" style="font-size:10px" data-action="promote" data-clan="${clanId}" data-uname="${escapeHtml(m.uname)}">⭐ Co-líder</button>` : ""}
+          ${myRole==="leader" && m.role==="co-leader" ? `<button class="btn-sm btn-demote" style="font-size:10px" data-action="demote" data-clan="${clanId}" data-uname="${escapeHtml(m.uname)}">↓ Miembro</button>` : ""}
+          <button class="btn-sm btn-reject" style="font-size:10px" data-action="kick" data-clan="${clanId}" data-uname="${escapeHtml(m.uname)}">✕ Sacar</button>
         </div>` : ""}
     </div>`).join("");
 
@@ -4067,22 +4099,19 @@ function openClanModal(clanId) {
   const pendingJoin = CLAN_REQUESTS_CACHE.filter(r=>r.clanId===clanId && r.status==="pending");
   const pendingJoinHtml = canManage && pendingJoin.length ? `
     <div class="records-title" style="margin-top:1.25rem;color:var(--gold)">⏳ Solicitudes de unión (${pendingJoin.length})</div>
-    ${pendingJoin.map(r=>{
-      const lb=LEADERBOARD.find(p=>(p.username||p.name||"").toLowerCase()===(r.username||"").toLowerCase());
-      const nc=lb?.nameColor||"";
-      return `
+    ${pendingJoin.map(r=>`
       <div class="clan-member-row">
-        <span class="clan-member-name" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap"><span${nc?` class="name-color-${nc}"`:""}>${r.username}</span>${renderIconBadges(getPlayerIcons(lb))}</span>
-        <button class="btn-accept btn-sm" data-req-id="${r.id}" data-action="accept-join" data-clan="${clanId}" data-uname="${r.username}">✓ Aceptar</button>
+        <span class="clan-member-name">${escapeHtml(r.username)}</span>
+        <button class="btn-accept btn-sm" data-req-id="${r.id}" data-action="accept-join" data-clan="${clanId}" data-uname="${escapeHtml(r.username)}">✓ Aceptar</button>
         <button class="btn-reject btn-sm" data-req-id="${r.id}" data-action="reject-join">✕ Rechazar</button>
-      </div>`;}).join("")}
+      </div>`).join("")}
   ` : "";
 
   const demonsHtml = demons.length
     ? demons.map(d=>`<div class="record-row">
         <span style="font-family:'Orbitron',monospace;font-size:12px;color:var(--muted);min-width:36px">#${d.demonRank}</span>
         <span style="flex:1;font-weight:600">${d.demonName}</span>
-        <span style="font-size:12px;color:var(--muted)">${d.player}</span>
+        <span style="font-size:12px;color:var(--muted)">${escapeHtml(d.player)}</span>
       </div>`).join("")
     : '<p style="color:var(--muted);font-size:13px;padding:.5rem 0">Sin demons completados.</p>';
 
@@ -4104,7 +4133,7 @@ function openClanModal(clanId) {
   content.innerHTML = `
     <div class="clan-modal-tag">[${clan.tag||"?"}]</div>
     <div class="clan-modal-name">${clan.name||""}</div>
-    <div style="color:var(--muted);font-size:12px;margin-bottom:1.25rem">Líder: <b style="color:var(--text)">${clan.leader||"?"}</b></div>
+    <div style="color:var(--muted);font-size:12px;margin-bottom:1.25rem">Líder: <b style="color:var(--text)">${escapeHtml(clan.leader||"?")}</b></div>
     <div class="modal-info-grid">
       <div class="info-cell"><div class="info-label">Puntos totales</div><div class="info-val" style="color:var(--accent);font-family:'Orbitron',monospace">${pts.toLocaleString()}</div></div>
       <div class="info-cell"><div class="info-label">Miembros</div><div class="info-val">${memberCount}/${CLAN_MAX_MEMBERS}</div></div>
@@ -4131,6 +4160,11 @@ function openClanModal(clanId) {
       showMsg("clan-join-msg","✓ Solicitud enviada.","success");
       b.outerHTML=`<span class="status-clan-pending">Solicitud enviada — esperando respuesta</span>`;
     } catch(e){showMsg("clan-join-msg","Error: "+e.message,"error");b.disabled=false;}
+  });
+
+  // Click en nombre de miembro → abrir su perfil (sin onclick inline, por seguridad)
+  content.querySelectorAll("[data-view-profile]").forEach(span=>{
+    span.addEventListener("click", ()=> openProfile(null, span.dataset.uname));
   });
 
   // Eventos de gestión de miembros
@@ -4362,7 +4396,7 @@ function renderAdminClanes(){
     <div class="clan-pending-card">
       <div class="clan-pending-info">
         <div class="clan-pending-name">[${c.tag}] ${c.name}</div>
-        <div class="clan-pending-meta">Líder: ${c.leader}</div>
+        <div class="clan-pending-meta">Líder: ${escapeHtml(c.leader)}</div>
       </div>
       <span class="status-clan-pending">Pendiente</span>
       <button class="btn-accept" data-clan-id="${c.id}" data-action="approve">✓ Aprobar</button>
@@ -4422,9 +4456,9 @@ function renderProfileClanInvites() {
     <div class="clan-invite-card" data-req-id="${inv.id}">
       <div class="clan-invite-info">
         <div class="clan-invite-name">[${inv.clanTag || "?"}] ${inv.clanName || "Clan"}</div>
-        <div class="clan-invite-meta">Invitado por <b>${inv.invitedBy || "?"}</b></div>
+        <div class="clan-invite-meta">Invitado por <b>${escapeHtml(inv.invitedBy || "?")}</b></div>
       </div>
-      <button class="btn-accept" data-action="accept-invite" data-req-id="${inv.id}" data-clan-id="${inv.clanId}" data-uname="${currentProfile.username}">✓ Aceptar</button>
+      <button class="btn-accept" data-action="accept-invite" data-req-id="${inv.id}" data-clan-id="${inv.clanId}" data-uname="${escapeHtml(currentProfile.username)}">✓ Aceptar</button>
       <button class="btn-reject" data-action="reject-invite" data-req-id="${inv.id}">✕ Rechazar</button>
     </div>
   `).join("");
